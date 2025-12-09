@@ -1,0 +1,14 @@
+#!/bin/bash
+# Refresh/reload Hyprland configuration
+
+hyprctl reload
+
+# Reload waybar
+pkill waybar
+waybar &
+
+# Reload mako
+pkill mako
+mako &
+
+notify-send "Omarchy Fedora" "Configuration reloaded"

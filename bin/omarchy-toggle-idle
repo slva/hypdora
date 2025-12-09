@@ -1,0 +1,17 @@
+#!/bin/bash
+# Toggle hypridle (idle management)
+
+STATE_FILE="$HOME/.local/state/omarchy-fedora/idle-disabled"
+mkdir -p "$(dirname "$STATE_FILE")"
+
+if [[ -f "$STATE_FILE" ]]; then
+    rm "$STATE_FILE"
+    # Restart hypridle
+    pkill hypridle
+    hypridle &
+    notify-send "Idle" "Screen will lock after inactivity"
+else
+    touch "$STATE_FILE"
+    pkill hypridle
+    notify-send "Idle" "Screen locking disabled"
+fi

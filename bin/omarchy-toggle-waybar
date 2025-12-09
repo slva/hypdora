@@ -1,0 +1,10 @@
+#!/bin/bash
+# Toggle waybar visibility
+
+if pgrep -x waybar > /dev/null; then
+    pkill waybar
+    notify-send "Waybar" "Hidden"
+else
+    waybar &
+    notify-send "Waybar" "Visible"
+fi

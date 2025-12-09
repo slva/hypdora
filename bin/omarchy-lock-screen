@@ -1,0 +1,10 @@
+#!/bin/bash
+# Lock screen script
+
+# Lock 1Password if installed
+if command -v 1password &> /dev/null; then
+    1password --lock 2>/dev/null
+fi
+
+# Lock screen
+hyprlock

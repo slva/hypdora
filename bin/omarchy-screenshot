@@ -1,0 +1,37 @@
+#!/bin/bash
+# Screenshot utility script
+
+MODE="${1:-region}"
+OUTPUT="${2:-clipboard}"
+
+SCREENSHOT_DIR="$HOME/Pictures/Screenshots"
+mkdir -p "$SCREENSHOT_DIR"
+
+FILENAME="screenshot-$(date +%Y%m%d-%H%M%S).png"
+FILEPATH="$SCREENSHOT_DIR/$FILENAME"
+
+case "$MODE" in
+    "full")
+        grim "$FILEPATH"
+        ;;
+    "region")
+        grim -g "$(slurp)" "$FILEPATH"
+        ;;
+    "window")
+        GEOM=$(hyprctl activewindow -j | jq -r '"\(.at[0]),\(.at[1]) \(.size[0])x\(.size[1])"')
+        grim -g "$GEOM" "$FILEPATH"
+        ;;
+    *)
+        echo "Usage: omarchy-screenshot [full|region|window] [clipboard|file]"
+        exit 1
+        ;;
+esac
+
+if [[ "$OUTPUT" == "clipboard" ]]; then
+    wl-copy < "$FILEPATH"
+    rm "$FILEPATH"
+    notify-send "Screenshot" "Copied to clipboard"
+else
+    wl-copy < "$FILEPATH"
+    notify-send "Screenshot" "Saved to $FILEPATH"
+fi

@@ -1,0 +1,32 @@
+# Wofi configuration
+# Alternative launcher to Walker for Fedora
+
+# General
+show=drun
+width=600
+height=400
+always_parse_args=true
+show_all=true
+print_command=true
+insensitive=true
+prompt=Search...
+allow_images=true
+image_size=32
+columns=1
+
+# Appearance
+location=center
+orientation=vertical
+halign=fill
+line_wrap=off
+dynamic_lines=false
+
+# Behavior
+allow_markup=true
+no_actions=false
+hide_scroll=false
+matching=fuzzy
+sort_order=alphabetical
+
+# Key bindings
+key_expand=Tab
