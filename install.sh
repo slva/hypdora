@@ -120,8 +120,8 @@ install_packages() {
         # Launcher
         walker
         
-        # Polkit (hyprpolkitagent - native Hyprland agent, from solopasha COPR)
-        hyprpolkitagent
+        # Polkit (mate-polkit - GTK based, no Qt conflicts)
+        mate-polkit
         
         # Fonts
         jetbrains-mono-fonts-all
