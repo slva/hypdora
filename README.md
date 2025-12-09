@@ -8,7 +8,7 @@ Aquest projecte porta les configuracions de Hyprland, Waybar, i altres component
 
 - **Hyprland** - Compositor Wayland amb tiling dinàmic
 - **Waybar** - Barra d'estat moderna
-- **Wofi** - Launcher d'aplicacions (alternativa a Walker)
+- **Walker** - Launcher d'aplicacions (GTK4)
 - **Mako** - Sistema de notificacions
 - **Hypridle** - Gestió d'idle (estalvi d'energia)
 - **Hyprlock** - Pantalla de bloqueig
@@ -29,7 +29,7 @@ chmod +x install.sh
 | Keybinding | Acció |
 |------------|-------|
 | `Super + Return` | Obrir terminal |
-| `Super + Space` | Launcher (wofi) |
+| `Super + Space` | Launcher (walker) |
 | `Super + W` | Tancar finestra |
 | `Super + F` | Pantalla completa |
 | `Super + T` | Toggle floating |
@@ -52,8 +52,8 @@ chmod +x install.sh
 ├── waybar/
 │   ├── config.jsonc
 │   └── style.css
-├── wofi/
-│   └── config
+├── walker/
+│   └── config.toml
 └── mako/
     └── config
 
@@ -88,7 +88,7 @@ Paquets instal·lats automàticament:
 
 - hyprland, hypridle, hyprlock, hyprpicker
 - waybar, mako, swaybg, swayosd
-- wofi, wl-clipboard, grim, slurp
+- walker, wl-clipboard, grim, slurp
 - brightnessctl, playerctl, pamixer
 - alacritty (terminal)
 - Fonts: JetBrains Mono, Noto, FontAwesome
@@ -112,8 +112,8 @@ sudo dnf install fontawesome-fonts-all
 ### El launcher no funciona
 
 ```bash
-# Provar wofi directament
-wofi --show drun
+# Provar walker directament
+walker
 ```
 
 ## 📄 Llicència

@@ -79,9 +79,12 @@ install_copr_repos() {
         log_info "Repositori COPR solopasha/hyprland ja existeix"
     fi
     
-    # COPR per Walker (si existeix)
-    if ! dnf repolist | grep -q "errornointernet-packages"; then
-        sudo dnf copr enable -y errornointernet/packages 2>/dev/null || log_warning "Walker COPR no disponible, s'utilitzarà wofi"
+    # COPR per Walker
+    if ! dnf repolist | grep -q "errornointernet-walker"; then
+        sudo dnf copr enable -y errornointernet/walker
+        log_success "Repositori COPR errornointernet/walker afegit"
+    else
+        log_info "Repositori COPR errornointernet/walker ja existeix"
     fi
 }
 
@@ -114,11 +117,11 @@ install_packages() {
         playerctl
         pamixer
         
-        # Launcher (wofi com alternativa a Walker)
-        wofi
+        # Launcher
+        walker
         
-        # Polkit
-        polkit-gnome
+        # Polkit (hyprpolkitagent - native Hyprland agent, from solopasha COPR)
+        hyprpolkitagent
         
         # Fonts
         jetbrains-mono-fonts-all
@@ -271,7 +274,7 @@ show_final_message() {
     echo ""
     echo -e "${CYAN}Keybindings principals:${NC}"
     echo "  Super + Return     Terminal"
-    echo "  Super + Space      Launcher (wofi)"
+    echo "  Super + Space      Launcher (walker)"
     echo "  Super + W          Tancar finestra"
     echo "  Super + F          Pantalla completa"
     echo "  Super + 1-0        Canviar workspace"
@@ -291,7 +294,7 @@ main() {
     echo "Aquest script instal·larà:"
     echo "  - Hyprland (compositor Wayland)"
     echo "  - Waybar (barra d'estat)"
-    echo "  - Wofi (launcher d'aplicacions)"
+    echo "  - Walker (launcher d'aplicacions)"
     echo "  - Mako (notificacions)"
     echo "  - Hypridle/Hyprlock (idle i lock screen)"
     echo "  - Configuracions i temes d'Omarchy"
