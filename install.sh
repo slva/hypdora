@@ -240,8 +240,12 @@ link_configs() {
         fi
     done
     
-    # Crear symlink per tema actual
-    ln -sf "$OMARCHY_FEDORA_PATH/themes/default" "$OMARCHY_FEDORA_CONFIG/omarchy-fedora/current"
+    # Crear symlink per tema actual (directament al repo per evitar problemes de chaining)
+    if ln -sf "$REPO_DIR/config/themes/default" "$OMARCHY_FEDORA_CONFIG/omarchy-fedora/current"; then
+        log_info "Symlink tema creat: $OMARCHY_FEDORA_CONFIG/omarchy-fedora/current -> $REPO_DIR/config/themes/default"
+    else
+        log_error "Error creant symlink del tema"
+    fi
     
     log_success "Symlinks creats i verificats"
 }
