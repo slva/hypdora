@@ -150,9 +150,8 @@ install_packages() {
         # Keyring
         gnome-keyring
         
-        # Qt Utils
-        qt5-qttools
-        qt6-qttools
+        # Hyprland Qt Utils (required for error dialogs etc)
+        hyprland-qtutils
     )
     
     log_info "Actualitzant sistema..."
