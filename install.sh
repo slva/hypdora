@@ -150,8 +150,8 @@ install_packages() {
         # Keyring
         gnome-keyring
         
-        # Hyprland Qt Utils (required for error dialogs etc)
-        hyprland-qtutils
+        # Hyprland Qt Utils (Removed due to dependency conflict on Fedora 43)
+        # hyprland-qtutils
     )
     
     log_info "Actualitzant sistema..."
