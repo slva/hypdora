@@ -136,8 +136,6 @@ install_packages() {
         google-noto-sans-fonts
         google-noto-emoji-fonts
         fontawesome-fonts-all
-        # Nerd Fonts (necessari per moltes icones)
-        google-noto-sans-mono-nerd-fonts
         
         # Terminal (ghostty no disponible, alternatives)
         alacritty
@@ -148,6 +146,8 @@ install_packages() {
         ripgrep
         fd-find
         bat
+        unzip
+        wget
         
         # Keyring
         gnome-keyring
@@ -166,6 +166,27 @@ install_packages() {
     sudo dnf install -y hyprsunset 2>/dev/null || log_warning "hyprsunset no disponible"
     
     log_success "Paquets instal·lats correctament"
+}
+
+# Instal·lar Nerd Fonts manualment
+install_nerd_fonts() {
+    log_info "Instal·lant Nerd Fonts (JetBrainsMono)..."
+    
+    FONT_DIR="$HOME/.local/share/fonts/NerdFonts"
+    mkdir -p "$FONT_DIR"
+    
+    if [[ ! -f "$FONT_DIR/JetBrainsMonoNerdFont-Regular.ttf" ]]; then
+        log_info "Descarregant fonts..."
+        wget -q --show-progress -O /tmp/JetBrainsMono.zip https://github.com/ryanoasis/nerd-fonts/releases/latest/download/JetBrainsMono.zip
+        unzip -o -q /tmp/JetBrainsMono.zip -d "$FONT_DIR"
+        rm /tmp/JetBrainsMono.zip
+        
+        log_info "Actualitzant cache de fonts..."
+        fc-cache -fv
+        log_success "Nerd Fonts instal·lades"
+    else
+        log_info "Nerd Fonts ja instal·lades"
+    fi
 }
 
 # Crear directoris base
@@ -368,6 +389,7 @@ main() {
     check_fedora
     install_copr_repos
     install_packages
+    install_nerd_fonts
     create_directories
     link_configs
     setup_path
