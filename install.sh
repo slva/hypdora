@@ -178,14 +178,23 @@ create_directories() {
 link_configs() {
     log_info "Creant symlinks per configuracions..."
     
+    # Assegurar paths absoluts
+    local REPO_DIR="$SCRIPT_DIR"
+    
     # Guardar el path del repositori per referència
     mkdir -p "$OMARCHY_FEDORA_CONFIG/omarchy-fedora"
-    echo "$SCRIPT_DIR" > "$OMARCHY_FEDORA_CONFIG/omarchy-fedora/.dotfiles-path"
+    echo "$REPO_DIR" > "$OMARCHY_FEDORA_CONFIG/omarchy-fedora/.dotfiles-path"
     
-    # Funció per crear symlink amb backup
+    # Funció per crear symlink amb backup i verificació
     create_symlink() {
         local source="$1"
         local target="$2"
+        
+        # Verificar source
+        if [[ ! -e "$source" ]]; then
+            log_error "Font no trobada: $source"
+            return 1
+        fi
         
         # Si existeix i no és symlink, fer backup
         if [[ -e "$target" && ! -L "$target" ]]; then
@@ -193,40 +202,47 @@ link_configs() {
             mv "$target" "$target.backup"
         fi
         
-        # Eliminar symlink existent si apunta a un altre lloc
+        # Eliminar symlink existent (per assegurar que s'actualitza)
         if [[ -L "$target" ]]; then
             rm "$target"
         fi
         
         # Crear directori pare si no existeix
-        mkdir -p "$(dirname "$target")"
+        local parent_dir=$(dirname "$target")
+        if [[ ! -d "$parent_dir" ]]; then
+            mkdir -p "$parent_dir"
+        fi
         
         # Crear symlink
-        ln -sf "$source" "$target"
-        log_info "Symlink: $target -> $source"
+        if ln -sf "$source" "$target"; then
+            log_info "Symlink creat: $target -> $source"
+        else
+            log_error "Error creant symlink: $target"
+            return 1
+        fi
     }
     
     # Symlink per default configs
-    create_symlink "$SCRIPT_DIR/default" "$OMARCHY_FEDORA_PATH/default"
+    create_symlink "$REPO_DIR/default" "$OMARCHY_FEDORA_PATH/default"
     
     # Symlink per bin scripts
-    create_symlink "$SCRIPT_DIR/bin" "$OMARCHY_FEDORA_PATH/bin"
-    chmod +x "$SCRIPT_DIR/bin/"*
+    create_symlink "$REPO_DIR/bin" "$OMARCHY_FEDORA_PATH/bin"
+    chmod +x "$REPO_DIR/bin/"*
     
     # Symlink per themes
-    create_symlink "$SCRIPT_DIR/config/themes" "$OMARCHY_FEDORA_PATH/themes"
+    create_symlink "$REPO_DIR/config/themes" "$OMARCHY_FEDORA_PATH/themes"
     
     # Symlinks per configs d'usuari
     for dir in hypr waybar walker mako; do
-        if [[ -d "$SCRIPT_DIR/config/$dir" ]]; then
-            create_symlink "$SCRIPT_DIR/config/$dir" "$OMARCHY_FEDORA_CONFIG/$dir"
+        if [[ -d "$REPO_DIR/config/$dir" ]]; then
+            create_symlink "$REPO_DIR/config/$dir" "$OMARCHY_FEDORA_CONFIG/$dir"
         fi
     done
     
     # Crear symlink per tema actual
     ln -sf "$OMARCHY_FEDORA_PATH/themes/default" "$OMARCHY_FEDORA_CONFIG/omarchy-fedora/current"
     
-    log_success "Symlinks creats correctament"
+    log_success "Symlinks creats i verificats"
 }
 
 # Setup PATH
