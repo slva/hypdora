@@ -190,6 +190,55 @@ install_nerd_fonts() {
 }
 
 # Instal·lar Walker manualment (per assegurar backend elephant)
+# Funció auxiliar per instal·lar des de tarball
+install_from_tar() {
+    local url="$1"
+    local dest_dir="$2"
+    local dest_name="$3"
+    local is_provider="${4:-false}"
+    
+    if [[ -z "$url" ]]; then
+        return 1
+    fi
+    
+    local tmp_dir=$(mktemp -d)
+    local tar_file="$tmp_dir/download.tar.gz"
+    
+    log_info "Descarregant de $url..."
+    if ! wget -q -O "$tar_file" "$url"; then
+        log_error "Error descarregant $url"
+        rm -rf "$tmp_dir"
+        return 1
+    fi
+    
+    log_info "Extraient..."
+    tar -xzf "$tar_file" -C "$tmp_dir"
+    
+    # Trobar el fitxer executable o .so
+    local found_file=""
+    if [[ "$is_provider" == "true" ]]; then
+        # Per providers, busquem .so o el binari
+        found_file=$(find "$tmp_dir" -type f -not -name "*.tar.gz" | head -n 1)
+    else
+        # Per binaris normals (walker, elephant)
+        found_file=$(find "$tmp_dir" -type f -executable -not -name "*.tar.gz" | head -n 1)
+        # Si no troba executable (a vegades no tenen bit +x al tar), agafa el fitxer més gran
+        if [[ -z "$found_file" ]]; then
+            found_file=$(find "$tmp_dir" -type f -not -name "*.tar.gz" -printf "%s %p\n" | sort -nr | head -n 1 | awk '{print $2}')
+        fi
+    fi
+    
+    if [[ -n "$found_file" ]]; then
+        log_info "Instal·lant $(basename "$found_file") a $dest_dir/$dest_name"
+        mv "$found_file" "$dest_dir/$dest_name"
+        chmod +x "$dest_dir/$dest_name"
+    else
+        log_error "No s'ha trobat cap fitxer vàlid al tarball"
+    fi
+    
+    rm -rf "$tmp_dir"
+}
+
 # Instal·lar Walker manualment (per assegurar backend elephant)
 install_walker() {
     log_info "Instal·lant Walker (i backend Elephant)..."
@@ -201,35 +250,20 @@ install_walker() {
     
     # 1. Instal·lar Walker
     WALKER_URL=$(curl -s https://api.github.com/repos/abenz1267/walker/releases/latest | grep "browser_download_url" | grep "x86_64" | grep ".tar.gz" | cut -d '"' -f 4 | head -n 1)
-    if [[ -n "$WALKER_URL" ]]; then
-        log_info "Descarregant Walker..."
-        wget -q -O /tmp/walker.tar.gz "$WALKER_URL"
-        tar -xzf /tmp/walker.tar.gz -C "$BIN_DIR"
-        rm /tmp/walker.tar.gz
-        chmod +x "$BIN_DIR/walker"
-    fi
+    install_from_tar "$WALKER_URL" "$BIN_DIR" "walker"
 
     # 2. Instal·lar Elephant (Backend)
     ELEPHANT_URL=$(curl -s https://api.github.com/repos/abenz1267/elephant/releases/latest | grep "browser_download_url" | grep "elephant-linux-amd64.tar.gz" | cut -d '"' -f 4 | head -n 1)
-    if [[ -n "$ELEPHANT_URL" ]]; then
-        log_info "Descarregant Elephant..."
-        wget -q -O /tmp/elephant.tar.gz "$ELEPHANT_URL"
-        tar -xzf /tmp/elephant.tar.gz -C "$BIN_DIR"
-        rm /tmp/elephant.tar.gz
-        chmod +x "$BIN_DIR/elephant"
-    fi
+    install_from_tar "$ELEPHANT_URL" "$BIN_DIR" "elephant"
 
     # 3. Instal·lar Providers
     PROVIDERS=("desktopapplications" "websearch" "providerlist" "clipboard" "symbols")
     for provider in "${PROVIDERS[@]}"; do
         P_URL=$(curl -s https://api.github.com/repos/abenz1267/elephant/releases/latest | grep "browser_download_url" | grep "${provider}-linux-amd64.tar.gz" | cut -d '"' -f 4 | head -n 1)
-        if [[ -n "$P_URL" ]]; then
-            log_info "Descarregant provider: $provider..."
-            wget -q -O "/tmp/${provider}.tar.gz" "$P_URL"
-            # Els providers van a ~/.config/elephant/providers/
-            tar -xzf "/tmp/${provider}.tar.gz" -C "$PROVIDERS_DIR"
-            rm "/tmp/${provider}.tar.gz"
-        fi
+        # Els providers es guarden amb el seu nom original o el nom del provider?
+        # Normalment elephant espera el nom del provider com a nom del fitxer (sense extensió o amb .so)
+        # Assumim que el nom del provider és suficient.
+        install_from_tar "$P_URL" "$PROVIDERS_DIR" "$provider" "true"
     done
     
     # 4. Habilitar servei Elephant
