@@ -198,8 +198,9 @@ link_configs() {
         
         # Si existeix i no és symlink, fer backup
         if [[ -e "$target" && ! -L "$target" ]]; then
-            log_warning "Backup: $target -> $target.backup"
-            mv "$target" "$target.backup"
+            local backup_name="$target.backup.$(date +%Y%m%d_%H%M%S)"
+            log_warning "Backup: $target -> $backup_name"
+            mv "$target" "$backup_name"
         fi
         
         # Eliminar symlink existent (per assegurar que s'actualitza)
