@@ -136,6 +136,8 @@ install_packages() {
         google-noto-sans-fonts
         google-noto-emoji-fonts
         fontawesome-fonts-all
+        # Nerd Fonts (necessari per moltes icones)
+        google-noto-sans-mono-nerd-fonts
         
         # Terminal (ghostty no disponible, alternatives)
         alacritty
