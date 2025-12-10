@@ -155,47 +155,70 @@ install_packages() {
     log_success "Paquets instal·lats correctament"
 }
 
-# Crear directoris
+# Crear directoris base
 create_directories() {
-    log_info "Creant directoris..."
+    log_info "Creant directoris base..."
     
-    mkdir -p "$OMARCHY_FEDORA_PATH"/{default/hypr/bindings,bin,themes/default}
-    mkdir -p "$OMARCHY_FEDORA_CONFIG"/{hypr,waybar,walker,mako}
+    # Només crear els directoris pare, els symlinks crearan la resta
+    mkdir -p "$OMARCHY_FEDORA_PATH"
+    mkdir -p "$OMARCHY_FEDORA_CONFIG"
     
     log_success "Directoris creats"
 }
 
-# Copiar configuracions
-copy_configs() {
-    log_info "Copiant configuracions..."
+# Crear symlinks per configuracions (dotfiles)
+link_configs() {
+    log_info "Creant symlinks per configuracions..."
     
-    # Copiar default configs
-    cp -r "$SCRIPT_DIR/default/"* "$OMARCHY_FEDORA_PATH/default/"
+    # Guardar el path del repositori per referència
+    mkdir -p "$OMARCHY_FEDORA_CONFIG/omarchy-fedora"
+    echo "$SCRIPT_DIR" > "$OMARCHY_FEDORA_CONFIG/omarchy-fedora/.dotfiles-path"
     
-    # Copiar bin scripts
-    cp -r "$SCRIPT_DIR/bin/"* "$OMARCHY_FEDORA_PATH/bin/"
-    chmod +x "$OMARCHY_FEDORA_PATH/bin/"*
+    # Funció per crear symlink amb backup
+    create_symlink() {
+        local source="$1"
+        local target="$2"
+        
+        # Si existeix i no és symlink, fer backup
+        if [[ -e "$target" && ! -L "$target" ]]; then
+            log_warning "Backup: $target -> $target.backup"
+            mv "$target" "$target.backup"
+        fi
+        
+        # Eliminar symlink existent si apunta a un altre lloc
+        if [[ -L "$target" ]]; then
+            rm "$target"
+        fi
+        
+        # Crear directori pare si no existeix
+        mkdir -p "$(dirname "$target")"
+        
+        # Crear symlink
+        ln -sf "$source" "$target"
+        log_info "Symlink: $target -> $source"
+    }
     
-    # Copiar themes
-    cp -r "$SCRIPT_DIR/config/themes/"* "$OMARCHY_FEDORA_PATH/themes/"
+    # Symlink per default configs
+    create_symlink "$SCRIPT_DIR/default" "$OMARCHY_FEDORA_PATH/default"
     
-    # Copiar configs d'usuari (si no existeixen)
+    # Symlink per bin scripts
+    create_symlink "$SCRIPT_DIR/bin" "$OMARCHY_FEDORA_PATH/bin"
+    chmod +x "$SCRIPT_DIR/bin/"*
+    
+    # Symlink per themes
+    create_symlink "$SCRIPT_DIR/config/themes" "$OMARCHY_FEDORA_PATH/themes"
+    
+    # Symlinks per configs d'usuari
     for dir in hypr waybar walker mako; do
         if [[ -d "$SCRIPT_DIR/config/$dir" ]]; then
-            if [[ ! -f "$OMARCHY_FEDORA_CONFIG/$dir/$(ls "$SCRIPT_DIR/config/$dir" | head -1)" ]]; then
-                cp -r "$SCRIPT_DIR/config/$dir/"* "$OMARCHY_FEDORA_CONFIG/$dir/" 2>/dev/null || true
-                log_info "Configuració $dir copiada"
-            else
-                log_warning "Configuració $dir ja existeix, no sobreescrivint"
-            fi
+            create_symlink "$SCRIPT_DIR/config/$dir" "$OMARCHY_FEDORA_CONFIG/$dir"
         fi
     done
     
     # Crear symlink per tema actual
-    mkdir -p "$OMARCHY_FEDORA_CONFIG/omarchy-fedora"
     ln -sf "$OMARCHY_FEDORA_PATH/themes/default" "$OMARCHY_FEDORA_CONFIG/omarchy-fedora/current"
     
-    log_success "Configuracions copiades"
+    log_success "Symlinks creats correctament"
 }
 
 # Setup PATH
@@ -311,7 +334,7 @@ main() {
     install_copr_repos
     install_packages
     create_directories
-    copy_configs
+    link_configs
     setup_path
     enable_services
     create_session_entry

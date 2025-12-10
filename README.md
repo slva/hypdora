@@ -40,27 +40,29 @@ chmod +x install.sh
 | `Print` | Captura de pantalla |
 | `Super + Escape` | Menú del sistema |
 
-## 📁 Estructura de fitxers
+## 📁 Estructura de fitxers (Dotfiles)
+
+Aquest projecte utilitza **symlinks** per gestionar les configuracions. Això permet:
+- Editar directament al repositori i veure els canvis immediatament
+- Versionar les configs amb Git
+- Sincronitzar fàcilment entre màquines
 
 ```
-~/.config/
-├── hypr/
-│   ├── hyprland.conf     # Configuració principal
-│   ├── bindings.conf     # Keybindings personalitzats
-│   ├── monitors.conf     # Configuració de monitors
-│   └── ...
-├── waybar/
-│   ├── config.jsonc
-│   └── style.css
-├── walker/
-│   └── config.toml
-└── mako/
-    └── config
+~/code/hypfedora/           # El teu repositori (pot estar on vulguis)
+├── config/                  # -> symlink a ~/.config/
+│   ├── hypr/
+│   ├── waybar/
+│   ├── walker/
+│   └── mako/
+├── default/                 # -> symlink a ~/.local/share/omarchy-fedora/default/
+└── bin/                     # -> symlink a ~/.local/share/omarchy-fedora/bin/
 
+~/.config/hypr               # Symlink -> ~/code/hypfedora/config/hypr
+~/.config/waybar             # Symlink -> ~/code/hypfedora/config/waybar
 ~/.local/share/omarchy-fedora/
-├── default/              # Configuracions per defecte
-├── bin/                  # Scripts d'utilitat
-└── themes/               # Temes
+├── default -> ~/code/hypfedora/default
+├── bin -> ~/code/hypfedora/bin
+└── themes -> ~/code/hypfedora/config/themes
 ```
 
 ## 🎨 Personalització
@@ -92,6 +94,21 @@ Paquets instal·lats automàticament:
 - brightnessctl, playerctl, pamixer
 - alacritty (terminal)
 - Fonts: JetBrains Mono, Noto, FontAwesome
+
+## 🔄 Sincronització entre màquines
+
+Com que el projecte usa symlinks, pots sincronitzar configs fàcilment:
+
+```bash
+# En una nova màquina
+git clone https://github.com/YOUR_USERNAME/hypfedora.git ~/dotfiles/hypfedora
+cd ~/dotfiles/hypfedora
+./install.sh
+
+# Actualitzar configs
+cd ~/dotfiles/hypfedora
+git pull  # Els canvis s'apliquen automàticament (symlinks!)
+```
 
 ## 🔧 Resolució de problemes
 
