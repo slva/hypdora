@@ -1,17 +1,14 @@
-/* Omarchy Fedora - Waybar Styles */
+@import "../omarchy-fedora/current/waybar.css";
 
 * {
-  background-color: #1e1e2e;
-  color: #cdd6f4;
+  background-color: @background;
+  color: @foreground;
+
   border: none;
   border-radius: 0;
   min-height: 0;
-  font-family: 'JetBrains Mono', 'Font Awesome 6 Free', monospace;
+  font-family: 'JetBrainsMono Nerd Font', 'Font Awesome 6 Free', monospace;
   font-size: 12px;
-}
-
-window#waybar {
-  background-color: rgba(30, 30, 46, 0.9);
 }
 
 .modules-left {
@@ -24,93 +21,74 @@ window#waybar {
 
 #workspaces button {
   all: initial;
-  padding: 0 8px;
-  margin: 0 2px;
-  min-width: 12px;
-  color: #cdd6f4;
-  background-color: transparent;
+  padding: 0 6px;
+  margin: 0 1.5px;
+  min-width: 9px;
+  color: @foreground;
 }
 
 #workspaces button.active {
-  color: #89b4fa;
-  background-color: rgba(137, 180, 250, 0.2);
-  border-radius: 4px;
-}
-
-#workspaces button:hover {
-  background-color: rgba(137, 180, 250, 0.1);
-  border-radius: 4px;
+  color: @color4;
 }
 
 #workspaces button.empty {
-  color: #6c7086;
-}
-
-#clock {
-  margin: 0 10px;
-  padding: 0 10px;
+  opacity: 0.5;
 }
 
 #cpu,
 #battery,
 #pulseaudio,
-#network,
-#bluetooth {
-  margin: 0 4px;
-  padding: 0 8px;
-}
-
-#battery.warning {
-  color: #f9e2af;
-}
-
-#battery.critical {
-  color: #f38ba8;
-  animation: blink 1s infinite;
-}
-
-#battery.charging {
-  color: #a6e3a1;
-}
-
-@keyframes blink {
-  to { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-
-#network.disconnected {
-  color: #f38ba8;
-}
-
-#pulseaudio.muted {
-  color: #6c7086;
-}
-
-#bluetooth.connected {
-  color: #89b4fa;
+#custom-omarchy,
+#custom-screenrecording-indicator,
+#custom-update {
+  min-width: 12px;
+  margin: 0 7.5px;
 }
 
 #tray {
-  margin-left: 10px;
-  margin-right: 5px;
+  margin-right: 16px;
 }
 
-#tray > .passive {
-  -gtk-icon-effect: dim;
+#bluetooth {
+  margin-right: 17px;
 }
 
-#tray > .needs-attention {
-  -gtk-icon-effect: highlight;
-  color: #f38ba8;
+#network {
+  margin-right: 13px;
+}
+
+#custom-expand-icon {
+  margin-right: 18px;
 }
 
 tooltip {
-  background-color: #1e1e2e;
-  border: 1px solid #313244;
-  border-radius: 8px;
-  padding: 8px;
+  padding: 2px;
+  background-color: @background;
+  border: 1px solid @color8;
 }
 
 tooltip label {
-  color: #cdd6f4;
+  color: @foreground;
+}
+
+#custom-update {
+  font-size: 10px;
+}
+
+#clock {
+  margin-left: 8.75px;
+}
+
+.hidden {
+  opacity: 0;
+}
+
+#custom-screenrecording-indicator {
+  min-width: 12px;
+  margin-left: 8.75px;
+  font-size: 10px;
+}
+
+#custom-screenrecording-indicator.active {
+  color: #a55555;
 }
