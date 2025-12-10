@@ -149,6 +149,10 @@ install_packages() {
         
         # Keyring
         gnome-keyring
+        
+        # Qt Utils
+        qt5-qttools
+        qt6-qttools
     )
     
     log_info "Actualitzant sistema..."
