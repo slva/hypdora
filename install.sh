@@ -86,6 +86,14 @@ install_copr_repos() {
     else
         log_info "Repositori COPR errornointernet/walker ja existeix"
     fi
+    
+    # COPR per SwayOSD
+    if ! dnf repolist | grep -q "erikreider-swayosd"; then
+        sudo dnf copr enable -y erikreider/swayosd
+        log_success "Repositori COPR erikreider/swayosd afegit"
+    else
+        log_info "Repositori COPR erikreider/swayosd ja existeix"
+    fi
 }
 
 # Instal·lar paquets
