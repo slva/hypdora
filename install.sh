@@ -126,7 +126,7 @@ install_packages() {
         pamixer
         
         # Launcher
-        walker
+        # walker (instal·lat manualment)
         
         # Polkit (mate-polkit - GTK based, no Qt conflicts)
         mate-polkit
@@ -187,6 +187,59 @@ install_nerd_fonts() {
     else
         log_info "Nerd Fonts ja instal·lades"
     fi
+}
+
+# Instal·lar Walker manualment (per assegurar backend elephant)
+# Instal·lar Walker manualment (per assegurar backend elephant)
+install_walker() {
+    log_info "Instal·lant Walker (i backend Elephant)..."
+    
+    BIN_DIR="$OMARCHY_FEDORA_PATH/bin"
+    PROVIDERS_DIR="$HOME/.config/elephant/providers"
+    mkdir -p "$BIN_DIR"
+    mkdir -p "$PROVIDERS_DIR"
+    
+    # 1. Instal·lar Walker
+    WALKER_URL=$(curl -s https://api.github.com/repos/abenz1267/walker/releases/latest | grep "browser_download_url" | grep "x86_64" | grep ".tar.gz" | cut -d '"' -f 4 | head -n 1)
+    if [[ -n "$WALKER_URL" ]]; then
+        log_info "Descarregant Walker..."
+        wget -q -O /tmp/walker.tar.gz "$WALKER_URL"
+        tar -xzf /tmp/walker.tar.gz -C "$BIN_DIR"
+        rm /tmp/walker.tar.gz
+        chmod +x "$BIN_DIR/walker"
+    fi
+
+    # 2. Instal·lar Elephant (Backend)
+    ELEPHANT_URL=$(curl -s https://api.github.com/repos/abenz1267/elephant/releases/latest | grep "browser_download_url" | grep "elephant-linux-amd64.tar.gz" | cut -d '"' -f 4 | head -n 1)
+    if [[ -n "$ELEPHANT_URL" ]]; then
+        log_info "Descarregant Elephant..."
+        wget -q -O /tmp/elephant.tar.gz "$ELEPHANT_URL"
+        tar -xzf /tmp/elephant.tar.gz -C "$BIN_DIR"
+        rm /tmp/elephant.tar.gz
+        chmod +x "$BIN_DIR/elephant"
+    fi
+
+    # 3. Instal·lar Providers
+    PROVIDERS=("desktopapplications" "websearch" "providerlist" "clipboard" "symbols")
+    for provider in "${PROVIDERS[@]}"; do
+        P_URL=$(curl -s https://api.github.com/repos/abenz1267/elephant/releases/latest | grep "browser_download_url" | grep "${provider}-linux-amd64.tar.gz" | cut -d '"' -f 4 | head -n 1)
+        if [[ -n "$P_URL" ]]; then
+            log_info "Descarregant provider: $provider..."
+            wget -q -O "/tmp/${provider}.tar.gz" "$P_URL"
+            # Els providers van a ~/.config/elephant/providers/
+            tar -xzf "/tmp/${provider}.tar.gz" -C "$PROVIDERS_DIR"
+            rm "/tmp/${provider}.tar.gz"
+        fi
+    done
+    
+    # 4. Habilitar servei Elephant
+    if [[ -f "$BIN_DIR/elephant" ]]; then
+        log_info "Habilitant servei Elephant..."
+        "$BIN_DIR/elephant" service enable || true
+        systemctl --user start elephant.service || true
+    fi
+    
+    log_success "Walker i Elephant instal·lats correctament"
 }
 
 # Crear directoris base
@@ -390,6 +443,7 @@ main() {
     install_copr_repos
     install_packages
     install_nerd_fonts
+    install_walker
     create_directories
     link_configs
     setup_path
