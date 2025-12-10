@@ -336,6 +336,7 @@ show_final_message() {
 # Main
 main() {
     show_logo
+    echo "Installer Version: 2.1 (Timestamp Fix)"
     
     echo -e "${CYAN}Benvingut a l'instal·lador d'Omarchy Fedora!${NC}"
     echo ""
