@@ -94,6 +94,14 @@ install_copr_repos() {
     else
         log_info "Repositori COPR erikreider/swayosd ja existeix"
     fi
+
+    # COPR per Ghostty
+    if ! dnf repolist | grep -q "scottames-ghostty"; then
+        sudo dnf copr enable -y scottames/ghostty
+        log_success "Repositori COPR scottames/ghostty afegit"
+    else
+        log_info "Repositori COPR scottames/ghostty ja existeix"
+    fi
 }
 
 # Instal·lar paquets
@@ -121,6 +129,7 @@ install_packages() {
         wl-clipboard
         grim
         slurp
+        cliphist
         brightnessctl
         playerctl
         pamixer
@@ -137,8 +146,8 @@ install_packages() {
         google-noto-emoji-fonts
         fontawesome-fonts-all
         
-        # Terminal (ghostty no disponible, alternatives)
-        alacritty
+        # Terminal
+        ghostty
         
         # Utilitats generals
         jq

@@ -92,7 +92,7 @@ Paquets instal·lats automàticament:
 - waybar, mako, swaybg, swayosd
 - walker, wl-clipboard, grim, slurp
 - brightnessctl, playerctl, pamixer
-- alacritty (terminal)
+- ghostty (terminal)
 - Fonts: JetBrains Mono, Noto, FontAwesome
 
 ## 🔄 Sincronització entre màquines
