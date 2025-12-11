@@ -1,0 +1,62 @@
+#!/bin/bash
+# Omarchy Fedora - Theme Switcher
+# Switch between installed themes
+
+set -e
+
+THEMES_DIR="$HOME/.local/share/omarchy-fedora/themes"
+CONFIG_DIR="$HOME/.config/omarchy-fedora"
+CURRENT_LINK="$CONFIG_DIR/current"
+
+# Ensure themes directory exists
+if [[ ! -d "$THEMES_DIR" ]]; then
+    notify-send "Omarchy Theme" "Themes directory not found!" -u critical
+    exit 1
+fi
+
+# Select theme
+THEME=$(ls "$THEMES_DIR" | walker --dmenu --placeholder "Select Theme")
+
+if [[ -z "$THEME" ]]; then
+    exit 0
+fi
+
+THEME_PATH="$THEMES_DIR/$THEME"
+
+if [[ ! -d "$THEME_PATH" ]]; then
+    notify-send "Omarchy Theme" "Invalid theme selected!" -u critical
+    exit 1
+fi
+
+# Update symlink
+ln -sf "$THEME_PATH" "$CURRENT_LINK"
+
+# Reload configurations
+notify-send "Omarchy Theme" "Applying theme: $THEME..."
+
+# 1. Hyprland
+hyprctl reload
+
+# 2. Waybar (restart to pick up new css)
+pkill waybar
+waybar & disown
+
+# 3. Wallpaper (swaybg)
+# Kill existing swaybg
+pkill swaybg || true
+# Start new swaybg with background from new theme
+if [[ -f "$CURRENT_LINK/background" ]]; then
+    swaybg -i "$CURRENT_LINK/background" -m fill & disown
+fi
+
+# 4. SwayOSD (reload style)
+# usually picks up css changes automatically or needs restart? 
+# attempting reload via kill/restart if needed, but often css is watched.
+# Let's restart to be safe as it's a daemon
+pkill swayosd-server || true
+swayosd-server & disown
+
+# 5. Mako (reload config)
+makoctl reload
+
+notify-send "Omarchy Theme" "Theme applied: $THEME"
