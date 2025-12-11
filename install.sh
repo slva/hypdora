@@ -356,7 +356,7 @@ link_configs() {
     create_symlink "$REPO_DIR/config/themes" "$OMARCHY_FEDORA_PATH/themes"
     
     # Symlinks per configs d'usuari
-    for dir in hypr waybar walker mako; do
+    for dir in hypr waybar walker mako ghostty; do
         if [[ -d "$REPO_DIR/config/$dir" ]]; then
             create_symlink "$REPO_DIR/config/$dir" "$OMARCHY_FEDORA_CONFIG/$dir"
         fi
