@@ -79,14 +79,7 @@ install_copr_repos() {
         log_info "Repositori COPR solopasha/hyprland ja existeix"
     fi
     
-    # COPR per Walker
-    if ! dnf repolist | grep -q "errornointernet-walker"; then
-        sudo dnf copr enable -y errornointernet/walker
-        log_success "Repositori COPR errornointernet/walker afegit"
-    else
-        log_info "Repositori COPR errornointernet/walker ja existeix"
-    fi
-    
+
     # COPR per SwayOSD
     if ! dnf repolist | grep -q "erikreider-swayosd"; then
         sudo dnf copr enable -y erikreider/swayosd
@@ -134,18 +127,8 @@ install_packages() {
         playerctl
         pamixer
         
-        # Launcher i backend
-        walker
-        elephant
-        
-        # Elephant Providers
-        elephant-desktopapplications
-        elephant-websearch
-        elephant-providerlist
-        elephant-clipboard
-        elephant-symbols
-        elephant-files
-        elephant-calc
+        # Launcher
+        wofi
         
         # Polkit (mate-polkit - GTK based, no Qt conflicts)
         mate-polkit
@@ -209,52 +192,6 @@ install_nerd_fonts() {
 }
 
 
-# Configurar servei Elephant (ja instal·lat via RPM)
-setup_walker_service() {
-    log_info "Configurant servei Elephant..."
-    
-    local ELEPHANT_BIN=$(which elephant 2>/dev/null || echo "/usr/bin/elephant")
-    
-    # Check if binary exists
-    if [[ ! -x "$ELEPHANT_BIN" ]]; then
-        log_warning "No s'ha trobat el binari d'elephant. Potser no s'ha instal·lat el paquet?"
-        return
-    fi
-    
-    # Crear fitxer de servei manualment a /etc/systemd/user (Global)
-    # Així evitem problemes de detecció en entorns com VMs
-    log_info "Creant servei global a /etc/systemd/user/..."
-    
-    sudo mkdir -p /etc/systemd/user
-    
-    sudo tee /etc/systemd/user/elephant.service > /dev/null <<EOF
-[Unit]
-Description=Elephant Service
-Documentation=https://github.com/abenz1267/elephant
-After=graphical-session.target
-
-[Service]
-ExecStart=$ELEPHANT_BIN
-Restart=always
-RestartSec=3
-
-[Install]
-WantedBy=default.target
-EOF
-    
-    # Verificar que el fitxer existeix
-    if [[ ! -f "/etc/systemd/user/elephant.service" ]]; then
-        log_error "El fitxer de servei no s'ha creat correctament a /etc/systemd/user/!"
-        return 1
-    fi
-    
-    log_info "Fitxer de servei creat. Recarregant systemd..."
-    systemctl --user daemon-reload || true
-    systemctl --user enable elephant.service || true
-    systemctl --user start elephant.service || true
-    
-    log_success "Servei Elephant configurat"
-}
 
 # Crear directoris base
 create_directories() {
@@ -327,7 +264,7 @@ link_configs() {
     create_symlink "$REPO_DIR/config/themes" "$OMARCHY_FEDORA_PATH/themes"
     
     # Symlinks per configs d'usuari
-    for dir in hypr waybar walker mako ghostty; do
+    for dir in hypr waybar mako ghostty; do
         if [[ -d "$REPO_DIR/config/$dir" ]]; then
             create_symlink "$REPO_DIR/config/$dir" "$OMARCHY_FEDORA_CONFIG/$dir"
         fi
@@ -419,7 +356,7 @@ show_final_message() {
     echo ""
     echo -e "${CYAN}Keybindings principals:${NC}"
     echo "  Super + Return     Terminal"
-    echo "  Super + Space      Launcher (walker)"
+    echo "  Super + Space      Launcher (wofi)"
     echo "  Super + W          Tancar finestra"
     echo "  Super + F          Pantalla completa"
     echo "  Super + 1-0        Canviar workspace"
@@ -440,7 +377,7 @@ main() {
     echo "Aquest script instal·larà:"
     echo "  - Hyprland (compositor Wayland)"
     echo "  - Waybar (barra d'estat)"
-    echo "  - Walker (launcher d'aplicacions)"
+    echo "  - Wofi (launcher d'aplicacions)"
     echo "  - Mako (notificacions)"
     echo "  - Hypridle/Hyprlock (idle i lock screen)"
     echo "  - Configuracions i temes d'Omarchy"
@@ -457,9 +394,6 @@ main() {
     install_copr_repos
     install_packages
     install_nerd_fonts
-    install_nerd_fonts
-    setup_walker_service
-    create_directories
     create_directories
     link_configs
     setup_path

@@ -15,7 +15,7 @@ if [[ ! -d "$THEMES_DIR" ]]; then
 fi
 
 # Select theme
-THEME=$(ls "$THEMES_DIR" | walker --dmenu --placeholder "Select Theme")
+THEME=$(ls "$THEMES_DIR" | wofi --dmenu --prompt "Select Theme")
 
 if [[ -z "$THEME" ]]; then
     exit 0

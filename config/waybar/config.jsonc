@@ -46,7 +46,7 @@
   },
   "custom/omarchy": {
     "format": "",
-    "on-click": "walker",
+    "on-click": "wofi --show drun",
     "on-click-right": "ghostty",
     "tooltip-format": "Menu\n\nSuper + Space"
   },

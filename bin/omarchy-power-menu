@@ -3,7 +3,7 @@
 
 CHOICES="Lock\nLogout\nSuspend\nReboot\nShutdown"
 
-SELECTED=$(echo -e "$CHOICES" | walker --dmenu --placeholder "Power")
+SELECTED=$(echo -e "$CHOICES" | wofi --dmenu --prompt "Power")
 
 case "$SELECTED" in
     "Lock")
