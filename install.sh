@@ -134,9 +134,18 @@ install_packages() {
         playerctl
         pamixer
         
-        # Launcher
+        # Launcher i backend
         walker
         elephant
+        
+        # Elephant Providers
+        elephant-desktopapplications
+        elephant-websearch
+        elephant-providerlist
+        elephant-clipboard
+        elephant-symbols
+        elephant-files
+        elephant-calc
         
         # Polkit (mate-polkit - GTK based, no Qt conflicts)
         mate-polkit
