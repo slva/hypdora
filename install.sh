@@ -135,7 +135,8 @@ install_packages() {
         pamixer
         
         # Launcher
-        # walker (instal·lat manualment)
+        walker
+        elephant
         
         # Polkit (mate-polkit - GTK based, no Qt conflicts)
         mate-polkit
@@ -198,121 +199,52 @@ install_nerd_fonts() {
     fi
 }
 
-# Instal·lar Walker manualment (per assegurar backend elephant)
-# Funció auxiliar per instal·lar des de tarball
-install_from_tar() {
-    local url="$1"
-    local dest_dir="$2"
-    local dest_name="$3"
-    local is_provider="${4:-false}"
-    
-    if [[ -z "$url" ]]; then
-        return 1
-    fi
-    
-    local tmp_dir=$(mktemp -d)
-    local tar_file="$tmp_dir/download.tar.gz"
-    
-    log_info "Descarregant de $url..."
-    if ! wget -q -O "$tar_file" "$url"; then
-        log_error "Error descarregant $url"
-        rm -rf "$tmp_dir"
-        return 1
-    fi
-    
-    log_info "Extraient..."
-    tar -xzf "$tar_file" -C "$tmp_dir"
-    
-    # Trobar el fitxer executable o .so
-    local found_file=""
-    if [[ "$is_provider" == "true" ]]; then
-        # Per providers, busquem .so o el binari
-        found_file=$(find "$tmp_dir" -type f -not -name "*.tar.gz" | head -n 1)
-    else
-        # Per binaris normals (walker, elephant)
-        found_file=$(find "$tmp_dir" -type f -executable -not -name "*.tar.gz" | head -n 1)
-        # Si no troba executable (a vegades no tenen bit +x al tar), agafa el fitxer més gran
-        if [[ -z "$found_file" ]]; then
-            found_file=$(find "$tmp_dir" -type f -not -name "*.tar.gz" -printf "%s %p\n" | sort -nr | head -n 1 | awk '{print $2}')
-        fi
-    fi
-    
-    if [[ -n "$found_file" ]]; then
-        log_info "Instal·lant $(basename "$found_file") a $dest_dir/$dest_name"
-        mv "$found_file" "$dest_dir/$dest_name"
-        chmod +x "$dest_dir/$dest_name"
-    else
-        log_error "No s'ha trobat cap fitxer vàlid al tarball"
-    fi
-    
-    rm -rf "$tmp_dir"
-}
 
-# Instal·lar Walker manualment (per assegurar backend elephant)
-install_walker() {
-    log_info "Instal·lant Walker (i backend Elephant)..."
+# Configurar servei Elephant (ja instal·lat via RPM)
+setup_walker_service() {
+    log_info "Configurant servei Elephant..."
     
-    BIN_DIR="$OMARCHY_FEDORA_PATH/bin"
-    PROVIDERS_DIR="$HOME/.config/elephant/providers"
-    mkdir -p "$BIN_DIR"
-    mkdir -p "$PROVIDERS_DIR"
+    local ELEPHANT_BIN=$(which elephant 2>/dev/null || echo "/usr/bin/elephant")
     
-    # 1. Instal·lar Walker
-    WALKER_URL=$(curl -s https://api.github.com/repos/abenz1267/walker/releases/latest | grep "browser_download_url" | grep "x86_64" | grep ".tar.gz" | cut -d '"' -f 4 | head -n 1)
-    install_from_tar "$WALKER_URL" "$BIN_DIR" "walker"
-
-    # 2. Instal·lar Elephant (Backend)
-    ELEPHANT_URL=$(curl -s https://api.github.com/repos/abenz1267/elephant/releases/latest | grep "browser_download_url" | grep "elephant-linux-amd64.tar.gz" | cut -d '"' -f 4 | head -n 1)
-    install_from_tar "$ELEPHANT_URL" "$BIN_DIR" "elephant"
-
-    # 3. Instal·lar Providers
-    PROVIDERS=("desktopapplications" "websearch" "providerlist" "clipboard" "symbols")
-    for provider in "${PROVIDERS[@]}"; do
-        P_URL=$(curl -s https://api.github.com/repos/abenz1267/elephant/releases/latest | grep "browser_download_url" | grep "${provider}-linux-amd64.tar.gz" | cut -d '"' -f 4 | head -n 1)
-        # Els providers es guarden amb el seu nom original o el nom del provider?
-        # Normalment elephant espera el nom del provider com a nom del fitxer (sense extensió o amb .so)
-        # Assumim que el nom del provider és suficient.
-        install_from_tar "$P_URL" "$PROVIDERS_DIR" "$provider" "true"
-    done
+    # Check if binary exists
+    if [[ ! -x "$ELEPHANT_BIN" ]]; then
+        log_warning "No s'ha trobat el binari d'elephant. Potser no s'ha instal·lat el paquet?"
+        return
+    fi
     
+    # Crear fitxer de servei manualment a /etc/systemd/user (Global)
+    # Així evitem problemes de detecció en entorns com VMs
+    log_info "Creant servei global a /etc/systemd/user/..."
     
-    # 4. Habilitar servei Elephant
-    if [[ -f "$BIN_DIR/elephant" ]]; then
-        log_info "Habilitant servei Elephant..."
-        # Crear fitxer de servei manualment a /etc/systemd/user (Global)
-        # Així evitem problemes de detecció en entorns com VMs
-        log_info "Creant servei global a /etc/systemd/user/..."
-        
-        sudo mkdir -p /etc/systemd/user
-        
-        sudo tee /etc/systemd/user/elephant.service > /dev/null <<EOF
+    sudo mkdir -p /etc/systemd/user
+    
+    sudo tee /etc/systemd/user/elephant.service > /dev/null <<EOF
 [Unit]
 Description=Elephant Service
 Documentation=https://github.com/abenz1267/elephant
 After=graphical-session.target
 
 [Service]
-ExecStart=%h/.local/share/omarchy-fedora/bin/elephant
+ExecStart=$ELEPHANT_BIN
 Restart=always
 RestartSec=3
 
 [Install]
 WantedBy=default.target
 EOF
-        
-        # Verificar que el fitxer existeix
-        if [[ ! -f "/etc/systemd/user/elephant.service" ]]; then
-            log_error "El fitxer de servei no s'ha creat correctament a /etc/systemd/user/!"
-            return 1
-        fi
-        
-        log_info "Fitxer de servei creat. Recarregant systemd..."
-        systemctl --user daemon-reload || true
-        systemctl --user enable elephant.service || true
-        systemctl --user start elephant.service || true
+    
+    # Verificar que el fitxer existeix
+    if [[ ! -f "/etc/systemd/user/elephant.service" ]]; then
+        log_error "El fitxer de servei no s'ha creat correctament a /etc/systemd/user/!"
+        return 1
     fi
     
-    log_success "Walker i Elephant instal·lats correctament"
+    log_info "Fitxer de servei creat. Recarregant systemd..."
+    systemctl --user daemon-reload || true
+    systemctl --user enable elephant.service || true
+    systemctl --user start elephant.service || true
+    
+    log_success "Servei Elephant configurat"
 }
 
 # Crear directoris base
@@ -516,7 +448,9 @@ main() {
     install_copr_repos
     install_packages
     install_nerd_fonts
-    install_walker
+    install_nerd_fonts
+    setup_walker_service
+    create_directories
     create_directories
     link_configs
     setup_path
