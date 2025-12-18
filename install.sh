@@ -297,6 +297,12 @@ RestartSec=3
 WantedBy=default.target
 EOF
         
+        # Assegurar permisos
+        chmod 644 "$HOME/.config/systemd/user/elephant.service"
+        
+        # Forçar systemd a veure el fitxer
+        log_info "Linkant servei..."
+        systemctl --user link "$HOME/.config/systemd/user/elephant.service" || true
         systemctl --user daemon-reload || true
         systemctl --user enable elephant.service || true
         systemctl --user start elephant.service || true
