@@ -279,17 +279,20 @@ install_walker() {
     # 4. Habilitar servei Elephant
     if [[ -f "$BIN_DIR/elephant" ]]; then
         log_info "Habilitant servei Elephant..."
-        mkdir -p "$HOME/.config/systemd/user"
+        # Crear fitxer de servei manualment a /etc/systemd/user (Global)
+        # Així evitem problemes de detecció en entorns com VMs
+        log_info "Creant servei global a /etc/systemd/user/..."
         
-        # Crear fitxer de servei manualment
-        cat <<EOF > "$HOME/.config/systemd/user/elephant.service"
+        sudo mkdir -p /etc/systemd/user
+        
+        sudo tee /etc/systemd/user/elephant.service > /dev/null <<EOF
 [Unit]
 Description=Elephant Service
 Documentation=https://github.com/abenz1267/elephant
 After=graphical-session.target
 
 [Service]
-ExecStart=$BIN_DIR/elephant
+ExecStart=%h/.local/share/omarchy-fedora/bin/elephant
 Restart=always
 RestartSec=3
 
@@ -297,12 +300,13 @@ RestartSec=3
 WantedBy=default.target
 EOF
         
-        # Assegurar permisos
-        chmod 644 "$HOME/.config/systemd/user/elephant.service"
+        # Verificar que el fitxer existeix
+        if [[ ! -f "/etc/systemd/user/elephant.service" ]]; then
+            log_error "El fitxer de servei no s'ha creat correctament a /etc/systemd/user/!"
+            return 1
+        fi
         
-        # Forçar systemd a veure el fitxer
-        log_info "Linkant servei..."
-        systemctl --user link "$HOME/.config/systemd/user/elephant.service" || true
+        log_info "Fitxer de servei creat. Recarregant systemd..."
         systemctl --user daemon-reload || true
         systemctl --user enable elephant.service || true
         systemctl --user start elephant.service || true
