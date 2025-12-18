@@ -280,7 +280,23 @@ install_walker() {
     if [[ -f "$BIN_DIR/elephant" ]]; then
         log_info "Habilitant servei Elephant..."
         mkdir -p "$HOME/.config/systemd/user"
-        "$BIN_DIR/elephant" service enable || true
+        
+        # Crear fitxer de servei manualment
+        cat <<EOF > "$HOME/.config/systemd/user/elephant.service"
+[Unit]
+Description=Elephant Service
+Documentation=https://github.com/abenz1267/elephant
+After=graphical-session.target
+
+[Service]
+ExecStart=$BIN_DIR/elephant
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=default.target
+EOF
+        
         systemctl --user daemon-reload || true
         systemctl --user enable elephant.service || true
         systemctl --user start elephant.service || true
