@@ -275,10 +275,14 @@ install_walker() {
         install_from_tar "$P_URL" "$PROVIDERS_DIR" "$provider" "true"
     done
     
+    
     # 4. Habilitar servei Elephant
     if [[ -f "$BIN_DIR/elephant" ]]; then
         log_info "Habilitant servei Elephant..."
+        mkdir -p "$HOME/.config/systemd/user"
         "$BIN_DIR/elephant" service enable || true
+        systemctl --user daemon-reload || true
+        systemctl --user enable elephant.service || true
         systemctl --user start elephant.service || true
     fi
     
